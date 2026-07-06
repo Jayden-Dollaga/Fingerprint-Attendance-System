@@ -59,7 +59,9 @@ docs/
 
 
 
+Type 'yes' if this has been implemented. If not, do it and create a to-do list so we can track what we are doing after that. Then update the documentation on what we did/implemented.
 
+Update the documentation of what we are doing from the start, including all the details, and list everything in the to-do list so that we can see where we are.
 
 
 

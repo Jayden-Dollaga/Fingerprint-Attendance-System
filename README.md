@@ -1,249 +1,372 @@
-# Fingerprint Attendance System
+# Fingerprint Attendance System v2.0
 
-**Status:** ✅ **Production Ready v2.2** — ESP32 Fingerprint Sensor + Python Backend + SQLite Database + CustomTkinter GUI + Charts + Backups + Role-Based Access + Auto-Logging
+**Status:** ✅ Production Ready — ESP32 fingerprint scanning, Python desktop GUI, SQLite data storage, backup/restore, role-based access, and reporting.
 
-An enterprise-grade biometric attendance system using the AS608 fingerprint sensor, 
-with a Python backend, SQLite database, CustomTkinter GUI, statistical charts, 
-automatic backups, and role-based access control.
+This project started as a practical hardware experiment: connect a fingerprint sensor to an ESP32, read biometric input, and use a desktop application to manage attendance records. It has since grown into a full attendance-management platform that combines embedded firmware, a Python application, a local database, and user-facing tools for monitoring and exporting data.
 
 ---
 
-## Key Features
+## Table of Contents
 
-✅ **Fingerprint Enrollment & Scanning** — Add and authenticate students via fingerprint  
-✅ **Attendance Tracking** — Automatic logging with timestamps and confidence scores  
-✅ **Statistical Charts** — Attendance timeline, section distribution, grade analysis  
-✅ **Database Backups** — Automatic timestamped backups with restore functionality  
-✅ **User Roles** — Admin, Teacher, Guest roles with live GUI role selector  
-✅ **Auto-Attendance Logging** — Automatic database saves on fingerprint matches (2s cooldown)  
-✅ **Auto-Reconnect** — Exponential backoff reconnection on connection loss  
-✅ **Centralized Logging** — Daily log files with multiple log levels  
-✅ **Excel Export** — Export attendance records to spreadsheet format  
-✅ **Dark Mode UI** — Modern CustomTkinter interface with professional styling  
+- [What this project does](#what-this-project-does)
+- [Project goals](#project-goals)
+- [How the system works from the start](#how-the-system-works-from-the-start)
+- [Hardware used](#hardware-used)
+- [Software stack](#software-stack)
+- [Project structure](#project-structure)
+- [Installation and setup](#installation-and-setup)
+- [Typical workflow](#typical-workflow)
+- [ESP32 command reference](#esp32-command-reference)
+- [Roles and permissions](#roles-and-permissions)
+- [Database and data handling](#database-and-data-handling)
+- [Automation and reliability](#automation-and-reliability)
+- [Development notes and project evolution](#development-notes-and-project-evolution)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
+- [Version notes](#version-notes)
 
 ---
 
-## Hardware
+## What this project does
 
-| Component | Details |
+The system allows a school, office, or training center to:
+
+- enroll students with fingerprint data
+- scan fingerprints for attendance verification
+- store attendance records with timestamps and confidence values
+- manage student details in a local database
+- view attendance analytics and reports
+- back up and restore database snapshots
+- restrict actions by user role
+- communicate with a fingerprint sensor over serial using an ESP32
+
+In short, it is a complete biometric attendance workflow from sensor input to data storage and reporting.
+
+---
+
+## Project goals
+
+This project was designed to be:
+
+- affordable and easy to build with common hardware
+- modular so each layer can be maintained independently
+- practical for real-world attendance use
+- suitable for small to medium educational or organizational deployment
+- extensible for future features such as cloud sync, RFID, or face recognition
+
+---
+
+## How the system works from the start
+
+1. A student is enrolled through the GUI.
+2. The Python application sends an enrollment command to the ESP32.
+3. The ESP32 reads the fingerprint from the AS608 sensor and stores it internally.
+4. The student profile is saved in the SQLite database.
+5. Later, the user starts attendance mode.
+6. The ESP32 waits for a fingerprint scan and identifies it if it matches a stored template.
+7. The Python app logs the attendance event and saves it to the database.
+8. The user can review logs, statistics, backups, and exports from the desktop interface.
+
+This is the full lifecycle of the system, from hardware registration to attendance reporting.
+
+---
+
+## Before you commit
+
+There are **2 things I would NOT commit.**
+
+### ❌ 1. Log files
+
+```
+data/logs/2026-07-07.log
+```
+
+Don't commit runtime logs.
+
+Add to `.gitignore`
+
+```
+data/logs/
+```
+
+---
+
+### ❌ 2. `settings.json`
+
+```
+data/settings.json
+```
+
+That's user-specific. Ignore it too:
+
+```
+data/settings.json
+```
+
+or
+
+```
+data/*.json
+```
+
+(if there aren't important JSON files in `data/`)
+
+
+## Hardware used
+
+| Component | Purpose |
 |---|---|
-| Microcontroller | ESP32 WROOM-32 with Screw Terminal Shield |
-| Fingerprint Sensor | AS608 Optical Fingerprint Sensor |
-| Connection | USB Serial (COM5 default) |
+| ESP32 DevKit / WROOM-32 | Main controller and serial bridge |
+| AS608 fingerprint sensor | Captures and matches fingerprints |
+| USB cable | Connects the ESP32 to the computer |
+| Breadboard and jumper wires | Wiring between the sensor and ESP32 |
+| Windows PC | Runs the Python GUI and database logic |
 
-### Wiring
+### Typical wiring
 
-| AS608 Wire | Color | Shield Terminal |
+| AS608 wire | Color | ESP32 connection |
 |---|---|---|
-| V+ | Purple | V column |
-| GND | Blue | G column |
-| TX | Orange | S column, D14 row |
-| RX | White | S column, D27 row |
+| V+ | Purple | 3.3V |
+| GND | Blue | GND |
+| TX | Orange | RX pin |
+| RX | White | TX pin |
+
+The exact GPIO mapping may vary depending on the firmware and hardware layout. The current firmware expects a serial-based connection between the ESP32 and the sensor module.
 
 ---
 
-## Project Structure
+## Software stack
 
-```
+- Python 3.13+
+- CustomTkinter for the desktop GUI
+- PySerial for serial communication
+- SQLite for local data storage
+- Matplotlib for charts and reports
+- OpenPyXL for Excel export
+- Pillow for image-related helpers
+- Arduino IDE for compiling and uploading firmware
+
+---
+
+## Project structure
+
+```text
 AI-Assisted-Fingerprint-Attendance-System/
-├── firmware/                   # Arduino sketch for ESP32
+├── firmware/                     # ESP32 Arduino sketches
+│   ├── attendance/
+│   ├── enroll/
+│   ├── delete/
+│   ├── test/
+│   └── ESP32_Fingerprint_AllInOne/
 ├── python/
-│   ├── main.py                 # Entry point
-│   ├── fix_emoji.py            # Small helper to restore the statistics tab emoji
-│   ├── config.py               # Settings + user roles
-│   ├── core/
-│   │   ├── serial_handler.py   # Serial I/O + auto-reconnect
-│   │   ├── commands.py         # Command abstraction
-│   │   ├── database.py         # SQLite + charts + backups
-│   │   ├── attendance.py       # Attendance processing
-│   │   ├── logger.py           # Centralized logging
-│   │   └── utils.py            # Utilities
-│   ├── gui/                    # CustomTkinter GUI with role-based access
-│   └── services/               # Excel export, backup
-├── data/
-│   ├── attendance.db           # SQLite database
-│   ├── backups/                # Timestamped backup files
-│   ├── charts/                 # Generated attendance charts
-│   └── logs/                   # Daily log files
-├── tests/                      # Comprehensive tests
-├── docs/                       # Detailed architecture docs
-└── requirements.txt            # Python dependencies
+│   ├── main.py                   # Main entry point
+│   ├── config.py                 # Serial, database, role, and behavior settings
+│   ├── core/                     # Database, serial, attendance, command logic
+│   ├── gui/                      # Desktop UI modules
+│   └── services/                 # Backup and export helpers
+├── data/                         # Database, backups, logs, exports
+├── docs/                         # Project documentation
+├── tests/                        # Validation and regression tests
+├── requirements.txt              # Python dependencies
+└── LICENSE
 ```
+
+### Main Python modules
+
+- [python/main.py](python/main.py) — startup entry point for the application
+- [python/config.py](python/config.py) — central configuration for port detection, serial settings, roles, and defaults
+- [python/core/serial_handler.py](python/core/serial_handler.py) — manages communication with the ESP32
+- [python/core/database.py](python/core/database.py) — stores and queries attendance and student records
+- [python/core/attendance.py](python/core/attendance.py) — processes scanned fingerprint events
+- [python/core/commands.py](python/core/commands.py) — sends firmware commands like scan, enroll, delete, and wipe
+- [python/gui/app.py](python/gui/app.py) — main GUI controller and page orchestrator
+- [python/gui/attendance_page.py](python/gui/attendance_page.py) — attendance view and record rendering
+- [python/gui/students_page.py](python/gui/students_page.py) — student registration and management UI
+- [python/gui/dialogs.py](python/gui/dialogs.py) — enrollment, backup, restore, and wipe dialogs
+- [python/gui/sidebar.py](python/gui/sidebar.py) — connection and quick-action controls
 
 ---
 
-## Quick Start
+## Installation and setup
 
-### 1. Flash ESP32
-
-Open [firmware/ESP32_Fingerprint_AllInOne/ESP32_Fingerprint_AllInOne.ino](firmware/ESP32_Fingerprint_AllInOne/ESP32_Fingerprint_AllInOne.ino)
-in Arduino IDE and upload to your ESP32.
-
-### 2. Install Python dependencies
+### 1. Install Python dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Required packages:
-- `pyserial==3.5` — Serial communication
-- `customtkinter==6.0.0` — Modern GUI
-- `openpyxl==3.1.5` — Excel export
-- `matplotlib==3.8.4` — Chart generation
-- `Pillow==10.1.0` — Image processing
+### 2. Upload the firmware
 
-### 3. Configure COM port (optional)
+Open the Arduino sketch in [firmware/ESP32_Fingerprint_AllInOne/ESP32_Fingerprint_AllInOne.ino](firmware/ESP32_Fingerprint_AllInOne/ESP32_Fingerprint_AllInOne.ino) and upload it to the ESP32 through the Arduino IDE.
 
-Edit [python/config.py](python/config.py):
-```python
-COM_PORT = "COM5"   # Change to your ESP32 port
-```
+### 3. Connect the hardware
 
-### 4. Run the application
+Make sure the fingerprint sensor and ESP32 are wired correctly and that the serial connection is available.
 
-On Windows, you can double-click [run_app.bat](run_app.bat) to install dependencies and launch the app automatically.
+### 4. Install dependencies (Windows)
+
+Double-click [install_requirements.bat](install_requirements.bat) to install the Python dependencies.
+
+### 5. Run the GUI application
+
+Double-click [run_app.bat](run_app.bat) to launch the desktop GUI.
+
+If you prefer the command line, you can also run:
 
 ```bash
-python python/main.py
+python python/gui/app.py
 ```
 
-This launches the CustomTkinter GUI with all features.
-
-### 5. Basic workflow
-
-1. **Select Role** — Use the role dropdown (top-right) to choose between Admin, Teacher, or Guest
-2. **Connect** — Click "Connect" button to establish serial connection with ESP32
-3. **Enroll** — Click "Enroll" to register a new fingerprint with student profile
-4. **Scan** — Click "Start Scan" to begin attendance mode (auto-saves to database)
-5. **View Stats** — Click "Statistics" tab to see charts and analytics
-6. **Backup** — Click "Backup" button to create database backup (if your role allows)
+> The GUI now opens larger by default so more of the interface fits on the screen.
 
 ---
 
-## ESP32 Firmware Commands
+## Typical workflow
 
-| Command | Action |
+### Enrollment
+
+1. Open the app and connect to the ESP32.
+2. Select the enrollment action.
+3. Place a finger on the sensor.
+4. Confirm the process in the GUI.
+5. Enter or review student information.
+6. Save the student profile to the database.
+
+### Attendance scanning
+
+1. Start scanning mode.
+2. Place a registered finger on the sensor.
+3. The ESP32 attempts to match the fingerprint.
+4. If matched, the attendance event is stored.
+5. The attendance view updates and the record becomes visible in the database.
+
+### Data review and export
+
+- open the attendance list
+- inspect student records
+- export data to Excel
+- view charts and analytics
+- create backups and restore previous versions if needed
+
+---
+
+## ESP32 command reference
+
+| Command | Purpose |
 |---|---|
-| `SCAN` | Start attendance scan mode |
-| `STOP` | Return to command mode |
-| `ENROLL` | Enroll finger with auto-assigned ID |
-| `ENROLL:1` | Enroll finger as specific ID |
-| `DELETE:1` | Delete finger ID 1 |
-| `WIPE` | Delete all fingerprints |
-| `LIST` | Show stored fingerprint count |
+| SCAN | Start attendance scanning mode |
+| STOP | Exit scanning mode |
+| ENROLL | Enroll a new fingerprint using the next available slot |
+| ENROLL:1 | Enroll a fingerprint as a specific ID |
+| DELETE:1 | Delete a specific fingerprint |
+| WIPE | Remove all stored fingerprints |
+| LIST | Show stored fingerprint count |
 
 ---
 
-## User Roles & Permissions
+## Roles and permissions
 
-The system includes three built-in roles with a **live GUI role selector** in the top-right corner:
+The application supports role-based access so different users can work with different levels of control.
 
-| Role | Permissions | Use Case |
-|---|---|---|
-| **Admin** | Scan, Enroll, Delete, Wipe, Export, Backup, Restore | System administrator (default) |
-| **Teacher** | Scan, Export, Backup | Teacher/Faculty — limited modifications |
-| **Guest** | Scan only | Visitor/Read-only access |
+| Role | Permissions |
+|---|---|
+| Administrator | Full access including scan, enroll, delete, wipe, export, backup, and restore |
+| Teacher | Scan, export, and backup access |
+| Guest | Scan-only access |
 
-**To change roles:** Use the dropdown selector in the top-right corner of the application. Buttons automatically enable/disable based on your role.
-
-Permissions are automatically enforced in the GUI—buttons enable/disable based on the current role.
+The current role can be changed from the GUI and the available actions update immediately.
 
 ---
 
-## Database Backups
+## Database and data handling
 
-The system automatically maintains timestamped backups:
+The system uses SQLite to store:
 
-- **Location:** `data/backups/attendance_YYYYMMDD_HHMMSS.db`
-- **Automatic Creation:** Backup button in GUI (role-restricted)
-- **Restore:** View and restore from any previous backup
-- **Metadata:** Backup list shows timestamp, file size, and creation date
+- student details
+- fingerprint IDs
+- attendance events
+- timestamps and confidence values
+- backup metadata
 
----
+The database is stored under [data/attendance.db](data/attendance.db), and backup snapshots are stored under [data/backups](data/backups).
 
-## Statistics & Charts
+### Backup behavior
 
-The Statistics tab displays three charts:
-
-1. **Attendance Timeline** — Line chart of attendance records over 30 days
-2. **Section Distribution** — Bar chart of student count per section
-3. **Grade Distribution** — Pie chart of attendance by grade
-
-Charts are saved to `data/charts/` and auto-update when new records are logged.
+- backups are created as timestamped database snapshots
+- previous backups can be restored from the GUI
+- backups help protect against accidental data loss
 
 ---
 
-## Auto-Reconnect & Logging
+## Automation and reliability
 
-- **Auto-Reconnect:** Automatic reconnection with exponential backoff (2s, 4s, 8s...)
-- **Logging:** All events logged to `data/logs/YYYY-MM-DD.log`
-- **Log Levels:** DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL with color coding
-- **Guide:** See [docs/logging-guide.md](docs/logging-guide.md) for a practical overview of the logging system
+The current system includes:
 
----
+- automatic serial port detection when possible
+- reconnect logic for dropped serial connections
+- cooldown handling to avoid duplicate attendance logging
+- logging for operational visibility
+- permission checks in the GUI so restricted actions are disabled for lower-privileged roles
+- persistent user settings stored in a JSON file for COM port, baud rate, theme, cooldown, and auto-reconnect behavior
+- type hints added to key database and serial helper functions to improve readability and editor support
 
-## Moving to Another PC
+### Settings persistence
 
-1. Copy the entire project folder
-2. Install Python 3.13+
-3. Run `pip install -r requirements.txt`
-4. Update `COM_PORT` in `python/config.py`
-5. Run `python python/main.py`
+The app now saves user preferences to [data/settings.json](data/settings.json) so the interface remembers your choices between sessions.
 
-The database (`data/attendance.db`) and backups (`data/backups/`) carry all data.
-Copy these directories to preserve records on the new system.
+Saved settings include:
 
----
+- COM port
+- baud rate
+- attendance cooldown
+- theme mode
+- auto-reconnect preference
 
-## Current Status
-
-This repository is **production-ready** and contains:
-
-✅ Working ESP32 firmware for fingerprint enrollment and scanning  
-✅ Python backend with serial communication and database operations  
-✅ SQLite database for student and attendance records  
-✅ Full-featured CustomTkinter GUI with role-based access  
-✅ Statistical charts and analytics  
-✅ Automatic database backups and restore functionality  
-✅ User role system with permission enforcement  
-✅ Auto-reconnect with exponential backoff  
-✅ Centralized logging system  
-✅ Excel export functionality  
-✅ Comprehensive test suite  
+These values are loaded automatically when the app starts and can be updated from the Settings dialog.
 
 ---
 
-## Built With
+## Development notes and project evolution
 
-- **Microcontroller:** ESP32 WROOM-32
-- **Sensor:** AS608 Fingerprint Sensor
-- **Language:** Python 3.13+
-- **GUI:** CustomTkinter 6.0.0
-- **Database:** SQLite3
-- **Libraries:** 
-  - `pyserial` — Serial communication
-  - `openpyxl` — Excel generation
-  - `matplotlib` — Charts
-  - `Pillow` — Image processing
+This project has evolved in stages:
+
+1. Initial prototype for fingerprint enrollment and scanning
+2. Addition of a desktop GUI for easier operation
+3. Integration with SQLite for persistent storage
+4. Addition of charts, export, backup, and restore features
+5. Refactoring of the GUI into modular page-based components for maintainability
+
+The current GUI structure is organized around page modules instead of one large monolithic window file, which makes the code easier to understand and extend.
+
+---
+
+## Troubleshooting
+
+If the app does not connect to the ESP32:
+
+- confirm the ESP32 is powered and connected
+- close the Arduino Serial Monitor if it is holding the COM port
+- check that the correct serial port is selected
+- verify the baud rate matches the firmware
+- confirm the firmware was uploaded successfully
+
+If fingerprint enrollment or scanning behaves unexpectedly:
+
+- verify the sensor wiring
+- check whether the ESP32 is still in the expected mode
+- inspect the application log output
+- test the firmware separately if needed
 
 ---
 
 ## License
 
-This project is provided as-is for educational and institutional use.
+This project is provided for educational and institutional use. Please review the license file for details.
 
 ---
 
-### Recent Updates (v2.2)
+## Version notes
 
-- ✅ **Reconnect Fix** — The serial reader and auto-reconnect loop were hardened so the app now continually retries with exponential backoff and updates the GUI status during reconnect attempts.
-- ✅ **Restore UI** — Added a `Restore DB` dialog in the sidebar that lists timestamped backups and allows restoring a selected backup (role-restricted).
-- ✅ **Permission Enforcement** — Viewing and exporting statistics now check the `export` permission at runtime; report buttons are disabled when the role lacks export rights.
-- ✅ **Wipe Behavior** — Wipe clears both student profiles and attendance history (retained from v2.1).
-- ✅ **Minor UI/UX** — Connection status and control buttons now reflect reconnect progress and final connection state more reliably.
-
-### Author
-
-Enforcer X — Research & Development  
-**Last Updated:** July 5, 2026  
-**Version:** 2.2 (Integration fixes: reconnect, restore UI, permissions)
+- Current focus: maintainability, reliability, and a cleaner user experience
+- The GUI has been reorganized into modular page-based components
+- Serial device detection has been improved to prefer likely USB UART ports over unrelated devices

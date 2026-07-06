@@ -30,3 +30,7 @@ desktop.ini
 firmware/**/*.hex
 firmware/**/*.elf
 firmware/**/build/
+
+# Ignore runtime logs and user settings
+data/logs/
+data/settings.json

@@ -1,9 +1,7 @@
 @echo off
-REM run_app.bat - launches the desktop GUI app
 setlocal enabledelayedexpansion
 cd /d "%~dp0"
 
-REM Determine a working Python command
 set PYTHON_CMD=python
 %PYTHON_CMD% --version >nul 2>&1
 if errorlevel 1 (
@@ -17,11 +15,14 @@ if errorlevel 1 (
     )
 )
 
-echo Starting GUI app...
-%PYTHON_CMD% python\gui\app.py
+echo Using %PYTHON_CMD% to install dependencies...
+%PYTHON_CMD% -m pip install --quiet -r requirements.txt
 if errorlevel 1 (
-    echo Application exited with errors.
-) else (
-    echo Application finished.
+    echo Failed to install requirements.
+    echo Please check your Python installation and requirements.txt.
+    pause
+    exit /b 1
 )
+
+echo Dependencies installed successfully.
 pause

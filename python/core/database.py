@@ -13,6 +13,7 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 from config import DB_PATH
 from core.logger import log
@@ -27,7 +28,7 @@ except ImportError:
     CHARTS_AVAILABLE = False
 
 
-def get_connection():
+def get_connection() -> sqlite3.Connection:
     """Open and return a database connection. Creates DB file if not exists."""
     db_dir = os.path.dirname(DB_PATH)
     if db_dir:
@@ -37,7 +38,7 @@ def get_connection():
     return conn
 
 
-def init_database():
+def init_database() -> None:
     """Create tables if they don't exist. Safe to call every startup."""
     conn = get_connection()
     cursor = conn.cursor()
@@ -105,7 +106,7 @@ def init_database():
 #  STUDENT OPERATIONS
 # ==============================================================================
 
-def add_student(fingerprint_id, student_no, student_name, grade, section):
+def add_student(fingerprint_id: int, student_no: str, student_name: str, grade: str, section: str) -> Tuple[bool, str]:
     """
     Add a new student to the database.
     Automatically sets enrollment_date and updated_date to current time.
@@ -134,7 +135,7 @@ def add_student(fingerprint_id, student_no, student_name, grade, section):
         conn.close()
 
 
-def update_student(fingerprint_id, student_no, student_name, grade, section):
+def update_student(fingerprint_id: int, student_no: str, student_name: str, grade: str, section: str) -> Tuple[bool, str]:
     """
     Update an existing student's info by fingerprint ID.
     Automatically updates the updated_date to current time.
@@ -155,7 +156,7 @@ def update_student(fingerprint_id, student_no, student_name, grade, section):
         conn.close()
 
 
-def delete_student(fingerprint_id):
+def delete_student(fingerprint_id: int) -> None:
     """Delete a student by fingerprint ID."""
     conn = get_connection()
     conn.execute("DELETE FROM students WHERE fingerprint_id = ?", (fingerprint_id,))
@@ -163,7 +164,7 @@ def delete_student(fingerprint_id):
     conn.close()
 
 
-def clear_all_students():
+def clear_all_students() -> int:
     """Delete every student profile and return the number removed."""
     conn = get_connection()
     try:
@@ -175,7 +176,7 @@ def clear_all_students():
         conn.close()
 
 
-def get_student(fingerprint_id):
+def get_student(fingerprint_id: int) -> Optional[Dict[str, Any]]:
     """Get one student by fingerprint ID. Returns dict or None."""
     if fingerprint_id is None or int(fingerprint_id) <= 0:
         return None
@@ -187,7 +188,7 @@ def get_student(fingerprint_id):
     return dict(row) if row else None
 
 
-def get_all_students():
+def get_all_students() -> List[Dict[str, Any]]:
     """Get all students ordered by fingerprint ID. Returns list of dicts."""
     conn = get_connection()
     rows = conn.execute(
@@ -197,7 +198,7 @@ def get_all_students():
     return [dict(r) for r in rows]
 
 
-def get_student_count():
+def get_student_count() -> int:
     """Return total number of students in database."""
     conn = get_connection()
     count = conn.execute("SELECT COUNT(*) FROM students").fetchone()[0]
@@ -205,7 +206,7 @@ def get_student_count():
     return count
 
 
-def register_student(fingerprint_id, student_no, student_name, grade, section):
+def register_student(fingerprint_id: int, student_no: str, student_name: str, grade: str, section: str) -> Tuple[bool, str]:
     """
     Register a student — adds if new, updates if fingerprint_id already exists.
     Use this instead of add_student() when you want upsert behavior.
@@ -216,7 +217,7 @@ def register_student(fingerprint_id, student_no, student_name, grade, section):
     return add_student(fingerprint_id, student_no, student_name, grade, section)
 
 
-def import_students_from_list(students):
+def import_students_from_list(students: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Bulk import students from a list of dicts.
     Each dict must have: fingerprint_id, student_no, student_name, grade, section
@@ -245,7 +246,7 @@ def import_students_from_list(students):
 #  ATTENDANCE OPERATIONS
 # ==============================================================================
 
-def log_attendance(fingerprint_id, confidence, status, now=None):
+def log_attendance(fingerprint_id: int, confidence: int, status: str, now: Optional[datetime] = None) -> None:
     """
     Save one attendance scan to database.
     now: datetime object (defaults to current time if not provided)
@@ -266,7 +267,7 @@ def log_attendance(fingerprint_id, confidence, status, now=None):
     conn.close()
 
 
-def get_attendance_today():
+def get_attendance_today() -> List[Dict[str, Any]]:
     """
     Get today's attendance records with student info via JOIN.
     Returns list of dicts.
@@ -294,7 +295,7 @@ def get_attendance_today():
     return [dict(r) for r in rows]
 
 
-def get_attendance_all():
+def get_attendance_all() -> List[Dict[str, Any]]:
     """
     Get ALL attendance records with student info via JOIN.
     Returns list of dicts.
