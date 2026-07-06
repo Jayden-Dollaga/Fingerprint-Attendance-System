@@ -1,0 +1,206 @@
+git init 
+git remote add origin
+git pull https://github.com/Jayden-Dollaga/Fingerprint-Attendance-System.git
+
+Quick setup — if you’ve done this kind of thing before
+or	https
+https://github.com/Jayden-Dollaga/Fingerprint-Attendance-System.git
+
+Get started by creating a new file or uploading an existing file. We recommend every repository include a README, LICENSE, and .gitignore.
+
+…or create a new repository on the command line
+echo "# stunning-couscous" >> README.md
+
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/Jayden-Dollaga/Fingerprint-Attendance-System.git
+git push -u origin main
+
+
+…or push an existing repository from the command line
+
+git remote add origin https://github.com/Jayden-Dollaga/Fingerprint-Attendance-System.git
+git branch -M main
+git push -u origin main
+
+
+bug:
+
+when i click the start scan it will click enroll too and make a any finger register again even tho it shoud not do that
+
+integration/ my idea
+when i click wipe the student should also be wipe than save becasue the wipe only wipe the finger inside of the esp 32 data not the file or the whole database itself same with delete
+
+
+
+
+
+
+[] - when i click format/wipe it will be erase all as intendent but there is a backup button we s
+
+
+this is a bug for me but when i did a finger scan it doesnt auto refresh and also its still the same when i scanned a registerd finger it go benigh the unregisterd its not like i sanned it go at the top if i scannee a not registerd finger it also go at the top but when i scanned the registerd figer again it dosent now go at the top juust benight it 
+
+
+
+
+
+docs/
+│
+├── System Architecture.md
+├── Hardware Connections.md
+├── Database Schema.md
+├── Software Flow.md
+├── Installation Guide.md
+├── Testing Results.md
+└── Change Log.md
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+AI-Assisted-Fingerprint-Attendance-System/
+│
+├── README.md
+├── LICENSE
+├── requirements.txt
+├── .gitignore
+│
+├── assets/                     # Logos, icons, images used by the app
+│
+├── data/
+│   ├── attendance.db           # SQLite database
+│   ├── backups/
+│   └── exports/
+│
+├── docs/       ✅
+│   ├── Project Overview.md
+│   ├── wiring.md
+│   ├── architecture.md
+│   ├── screenshots/
+│   └── photos/
+│
+├── firmware/
+│   └── ESP32_Fingerprint_AllInOne/     ✅
+│       └── ESP32_Fingerprint_AllInOne.ino      ✅
+│
+├── python/
+│   ├── main.py     ✅
+│   ├── config.py       ✅
+│   │
+│   ├── core/
+│   │   ├── database.py     ✅
+│   │   ├── serial_handler.py       ✅
+│   │   ├── attendance.py       ✅
+│   │   ├── commands.py     ✅
+│   │   └── utils.py        ✅
+│   │
+│   ├── gui/
+│   │   ├── main_window.py
+│   │   ├── attendance_page.py
+│   │   ├── students_page.py
+│   │   └── settings_page.py
+│   │
+│   └── services/
+│       ├── excel_export.py     ✅
+│       └── backup.py       ✅
+│
+├── tests/      ✅
+│   ├── raw_serial_test.py
+│   └── database_test.py
+│
+└── tools/      ✅
+    ├── list_files.bat
+    └── other helper scripts
+
+
+
+
+missing for now
+
+
+├── assets/                     # Logos, icons, images used by the app
+│
+├── data/
+│   ├── attendance.db           # SQLite database
+│   ├── backups/
+│   └── exports/
+
+and
+
+├── python/
+│   ├── gui/
+│   │   ├── main_window.py
+│   │   ├── attendance_page.py
+│   │   ├── students_page.py
+│   │   └── settings_page.py
+
+
+
+
+
+
+
+
+
+AI-Assisted-Fingerprint-Attendance-System/
+│
+├── README.md
+├── LICENSE
+├── requirements.txt
+├── .gitignore
+│
+├── firmware/                  # ESP32 code
+│   ├── attendance/
+│   │   └── attendance.ino
+│   │
+│   ├── enroll/
+│   │   └── enroll.ino
+│   │
+│   ├── delete/
+│   │   └── delete.ino
+│   │
+│   └── test/
+│       └── fingerprint_check.ino
+│
+├── python/
+│   ├── main.py                # Starts the whole application
+│   ├── config.py              # COM port, baud rate, settings
+│   ├── serial_handler.py      # Talks to ESP32
+│   ├── database.py            # SQLite functions
+│   ├── attendance.py          # Attendance logic
+│   ├── student_manager.py     # Student CRUD
+│   ├── excel_export.py        # Excel export
+│   └── gui.py                 # Main GUI
+│
+├── database/
+│   └── attendance_system.db
+│
+├── exports/
+│   └── Attendance.xlsx
+│
+├── docs/
+│   ├── wiring.md
+│   ├── database_schema.md
+│   └── screenshots/
+│
+├── assets/
+│   ├── logo.png
+│   └── icons/
+│
+└── tests/
+    └── serial_test.py
+
+    
