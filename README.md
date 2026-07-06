@@ -1,4 +1,4 @@
-# AI-Assisted Fingerprint Attendance System
+# Fingerprint Attendance System
 
 **Status:** ✅ **Production Ready v2.2** — ESP32 Fingerprint Sensor + Python Backend + SQLite Database + CustomTkinter GUI + Charts + Backups + Role-Based Access + Auto-Logging
 
