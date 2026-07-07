@@ -99,10 +99,22 @@ def open_settings_dialog(app):
         except Exception as err:
             messagebox.showerror("Settings Error", f"Could not save settings: {err}", parent=dialog)
 
-    ctk.CTkButton(button_row, text="Save", command=_save_settings).grid(row=0, column=0, padx=(0, 8), sticky="ew")
-    ctk.CTkButton(button_row, text="Close", fg_color="transparent", border_width=1, command=dialog.destroy).grid(
-        row=0, column=1, sticky="ew"
-    )
+    ctk.CTkButton(
+        button_row,
+        text="Save",
+        command=_save_settings,
+        height=40,
+        corner_radius=8,
+    ).grid(row=0, column=0, padx=(0, 8), sticky="ew")
+    ctk.CTkButton(
+        button_row,
+        text="Close",
+        fg_color="transparent",
+        border_width=1,
+        command=dialog.destroy,
+        height=40,
+        corner_radius=8,
+    ).grid(row=0, column=1, sticky="ew")
 
     dialog.protocol("WM_DELETE_WINDOW", dialog.destroy)
     app.settings_dialog = dialog

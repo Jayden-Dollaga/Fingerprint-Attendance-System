@@ -89,8 +89,8 @@ class FingerprintApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Fingerprint Attendance System")
-        self.geometry("1280x820")
-        self.minsize(1100, 700)
+        self.geometry("1440x900")
+        self.minsize(1200, 760)
 
         self.serial_handler = SerialHandler()
         self.stop_event = threading.Event()
@@ -491,6 +491,9 @@ class FingerprintApp(ctk.CTk):
             self.log_message("Sent LIST command to ESP32.")
         else:
             self.log_message("Not connected — showing saved student records only.")
+
+        student_count = len(get_all_students())
+        self.log_message(f"{student_count} fingerprint(s) registered.")
         self.open_students_list_dialog()
 
     # ------------------------------------------------------------------

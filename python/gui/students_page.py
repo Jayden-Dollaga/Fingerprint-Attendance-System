@@ -277,12 +277,16 @@ class StudentsPage:
             button_row,
             text="Save",
             command=do_save,
+            height=40,
+            corner_radius=8,
             state="normal" if self.app.has_permission("enroll") else "disabled",
         ).grid(row=0, column=0, padx=(0, 4), sticky="ew")
         ctk.CTkButton(
             button_row,
             text="Delete",
             command=do_delete,
+            height=40,
+            corner_radius=8,
             fg_color="#e74c3c",
             hover_color="#c0392b",
             state="normal" if self.app.has_permission("delete") else "disabled",
@@ -291,6 +295,8 @@ class StudentsPage:
             button_row,
             text="Close",
             command=dialog.destroy,
+            height=40,
+            corner_radius=8,
             fg_color="transparent",
             border_width=1,
         ).grid(row=0, column=2, padx=(4, 0), sticky="ew")
@@ -381,12 +387,16 @@ class StudentsPage:
             button_row,
             text="Save",
             command=do_save,
+            height=40,
+            corner_radius=8,
             state="normal" if self.app.has_permission("enroll") else "disabled",
         ).grid(row=0, column=0, padx=(0, 4), sticky="ew")
         ctk.CTkButton(
             button_row,
             text="Close",
             command=dialog.destroy,
+            height=40,
+            corner_radius=8,
             fg_color="transparent",
             border_width=1,
         ).grid(row=0, column=1, padx=(4, 0), sticky="ew")

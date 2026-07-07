@@ -5,7 +5,7 @@ from settings_store import load_settings
 
 
 def build_sidebar(app):
-    sidebar = ctk.CTkFrame(app, width=280, corner_radius=0)
+    sidebar = ctk.CTkFrame(app, width=320, corner_radius=0)
     sidebar.grid(row=0, column=0, sticky="nsw")
     sidebar.grid_propagate(False)
     sidebar.grid_columnconfigure(0, weight=1)
@@ -58,7 +58,13 @@ def build_sidebar(app):
     app.baud_combobox.grid(row=3, column=0, padx=12, pady=(0, 8), sticky="ew")
 
     app.connect_button = ctk.CTkButton(
-        connection_card, text="Connect", command=app.toggle_connection, fg_color="#3b82f6"
+        connection_card,
+        text="Connect",
+        command=app.toggle_connection,
+        fg_color="#3b82f6",
+        height=42,
+        corner_radius=8,
+        font=("Segoe UI", 12, "bold"),
     )
     app.connect_button.grid(row=4, column=0, padx=12, pady=(0, 8), sticky="ew")
 
@@ -78,55 +84,84 @@ def build_sidebar(app):
         row=0, column=0, padx=12, pady=(12, 8), sticky="w"
     )
 
-    app.scan_button = ctk.CTkButton(
-        actions_card, text="▶  Start Scan", command=app.start_scan, state="disabled"
-    )
-    app.scan_button.grid(row=1, column=0, padx=12, pady=4, sticky="ew")
+    button_stack = ctk.CTkFrame(actions_card, fg_color="transparent")
+    button_stack.grid(row=1, column=0, padx=12, pady=(0, 12), sticky="ew")
+    button_stack.grid_columnconfigure(0, weight=1)
 
-    app.stop_button = ctk.CTkButton(
-        actions_card, text="⏹  Stop Scan", command=app.stop_scan, state="disabled",
-        fg_color="transparent", border_width=1
-    )
-    app.stop_button.grid(row=2, column=0, padx=12, pady=4, sticky="ew")
+    def _add_action_button(text, command, **kwargs):
+        return ctk.CTkButton(
+            button_stack,
+            text=text,
+            command=command,
+            height=40,
+            corner_radius=8,
+            font=("Segoe UI", 12),
+            **kwargs,
+        )
 
-    app.enroll_button = ctk.CTkButton(actions_card, text="➕ Enroll", command=app.enroll_sample)
-    app.enroll_button.grid(row=3, column=0, padx=12, pady=(10, 4), sticky="ew")
+    app.scan_button = _add_action_button("▶  Start Scan", app.start_scan, state="disabled")
+    app.scan_button.grid(row=0, column=0, pady=4, sticky="ew")
 
-    app.list_button = ctk.CTkButton(
-        actions_card, text="📋 List", command=app.list_fingerprints,
-        fg_color="transparent", border_width=1
+    app.stop_button = _add_action_button(
+        "⏹  Stop Scan",
+        app.stop_scan,
+        state="disabled",
+        fg_color="transparent",
+        border_width=1,
     )
-    app.list_button.grid(row=4, column=0, padx=12, pady=4, sticky="ew")
+    app.stop_button.grid(row=1, column=0, pady=4, sticky="ew")
 
-    app.wipe_button = ctk.CTkButton(
-        actions_card, text="⚠ Wipe", command=app.open_wipe_dialog,
-        fg_color="#e74c3c", hover_color="#c0392b"
-    )
-    app.wipe_button.grid(row=5, column=0, padx=12, pady=4, sticky="ew")
+    app.enroll_button = _add_action_button("➕ Enroll", app.enroll_sample)
+    app.enroll_button.grid(row=2, column=0, pady=(10, 4), sticky="ew")
 
-    app.backup_button = ctk.CTkButton(
-        actions_card, text="💾 Backup DB", command=app.backup_database,
-        fg_color="#16a34a", hover_color="#15803d"
+    app.list_button = _add_action_button(
+        "📋 List",
+        app.list_fingerprints,
+        fg_color="transparent",
+        border_width=1,
     )
-    app.backup_button.grid(row=6, column=0, padx=12, pady=4, sticky="ew")
+    app.list_button.grid(row=3, column=0, pady=4, sticky="ew")
 
-    app.restore_button = ctk.CTkButton(
-        actions_card, text="🔁 Restore DB", command=app.open_restore_dialog,
-        fg_color="#f59e0b", hover_color="#d97706"
+    app.wipe_button = _add_action_button(
+        "⚠ Wipe",
+        app.open_wipe_dialog,
+        fg_color="#e74c3c",
+        hover_color="#c0392b",
     )
-    app.restore_button.grid(row=7, column=0, padx=12, pady=4, sticky="ew")
+    app.wipe_button.grid(row=4, column=0, pady=4, sticky="ew")
 
-    app.settings_button = ctk.CTkButton(
-        actions_card, text="⚙ Settings", command=app.open_settings_dialog,
-        fg_color="#6366f1", hover_color="#4f46e5"
+    app.backup_button = _add_action_button(
+        "💾 Backup DB",
+        app.backup_database,
+        fg_color="#16a34a",
+        hover_color="#15803d",
     )
-    app.settings_button.grid(row=8, column=0, padx=12, pady=4, sticky="ew")
+    app.backup_button.grid(row=5, column=0, pady=4, sticky="ew")
 
-    app.quit_button = ctk.CTkButton(
-        actions_card, text="Quit", command=app.quit_app,
-        fg_color="transparent", border_width=1, text_color=("gray10", "gray90")
+    app.restore_button = _add_action_button(
+        "🔁 Restore DB",
+        app.open_restore_dialog,
+        fg_color="#f59e0b",
+        hover_color="#d97706",
     )
-    app.quit_button.grid(row=9, column=0, padx=12, pady=(10, 12), sticky="ew")
+    app.restore_button.grid(row=6, column=0, pady=4, sticky="ew")
+
+    app.settings_button = _add_action_button(
+        "⚙ Settings",
+        app.open_settings_dialog,
+        fg_color="#6366f1",
+        hover_color="#4f46e5",
+    )
+    app.settings_button.grid(row=7, column=0, pady=4, sticky="ew")
+
+    app.quit_button = _add_action_button(
+        "Quit",
+        app.quit_app,
+        fg_color="transparent",
+        border_width=1,
+        text_color=("gray10", "gray90"),
+    )
+    app.quit_button.grid(row=8, column=0, pady=(10, 0), sticky="ew")
 
     app.update_button_permissions()
 

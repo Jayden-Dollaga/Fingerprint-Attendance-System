@@ -97,46 +97,6 @@ This is the full lifecycle of the system, from hardware registration to attendan
 
 ---
 
-## Before you commit
-
-There are **2 things I would NOT commit.**
-
-### ❌ 1. Log files
-
-```text
-data/logs/2026-07-07.log
-```
-
-Don't commit runtime logs.
-
-Add to `.gitignore`
-
-```text
-data/logs/
-```
-
----
-
-### ❌ 2. `settings.json`
-
-```text
-data/settings.json
-```
-
-That's user-specific. Ignore it too:
-
-```text
-data/settings.json
-```
-
-or
-
-```text
-data/*.json
-```
-
-(if there aren't important JSON files in `data/`)
-
 ## Hardware used
 
 | Component | Purpose |

@@ -77,10 +77,25 @@ def build_statistics_tab(app, tab):
     button_row = ctk.CTkFrame(report_card, fg_color="transparent")
     button_row.pack(anchor="w", padx=14, pady=(0, 12), fill="x")
 
-    ctk.CTkButton(button_row, text="📋 View Report", width=140, command=app.show_statistics_report,
-                  state="normal" if app.has_permission("export") else "disabled").pack(side="left", padx=(0, 8))
-    ctk.CTkButton(button_row, text="💾 Export Report", width=140, command=app.export_statistics_report,
-                  fg_color="#27ae60", state="normal" if app.has_permission("export") else "disabled").pack(side="left", padx=(0, 8))
+    ctk.CTkButton(
+        button_row,
+        text="📋 View Report",
+        width=140,
+        height=40,
+        corner_radius=8,
+        command=app.show_statistics_report,
+        state="normal" if app.has_permission("export") else "disabled",
+    ).pack(side="left", padx=(0, 8))
+    ctk.CTkButton(
+        button_row,
+        text="💾 Export Report",
+        width=140,
+        height=40,
+        corner_radius=8,
+        command=app.export_statistics_report,
+        fg_color="#27ae60",
+        state="normal" if app.has_permission("export") else "disabled",
+    ).pack(side="left")
 
     if getattr(app, 'PILLOW_AVAILABLE', False):
         charts_card = ctk.CTkFrame(scrollable, corner_radius=10)
@@ -89,5 +104,12 @@ def build_statistics_tab(app, tab):
         ctk.CTkLabel(charts_card, text="📈 Visual Analytics", font=("Segoe UI", 13, "bold")).pack(anchor="w", padx=14, pady=(12, 8))
         button_row = ctk.CTkFrame(charts_card, fg_color="transparent")
         button_row.pack(anchor="w", padx=14, pady=(0, 12), fill="x")
-        ctk.CTkButton(button_row, text="📊 Show Charts", width=140, command=app.show_statistics_charts,
-                      fg_color="#9333ea").pack(side="left", padx=(0, 8))
+        ctk.CTkButton(
+            button_row,
+            text="📊 Show Charts",
+            width=140,
+            height=40,
+            corner_radius=8,
+            command=app.show_statistics_charts,
+            fg_color="#9333ea",
+        ).pack(side="left")
