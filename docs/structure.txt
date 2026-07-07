@@ -73,7 +73,7 @@ Update the documentation of what we are doing from the start, including all the 
 
 
 
-AI-Assisted-Fingerprint-Attendance-System/
+Fingerprint-Attendance-System/
 │
 ├── README.md
 ├── LICENSE
@@ -157,7 +157,7 @@ and
 
 
 
-AI-Assisted-Fingerprint-Attendance-System/
+Fingerprint-Attendance-System/
 │
 ├── README.md
 ├── LICENSE

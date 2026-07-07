@@ -1,15 +1,14 @@
-Database Schema
-===============
+# Database Schema
 
-Overview
---------
-The application uses SQLite for both student profile storage and attendance history. The schema is designed to support daily roll-call workflows, manual student registration, backup/restore operations, and reporting.
+## Overview
 
-Core Tables
------------
+The application uses SQLite as its local persistence layer. The schema is intentionally simple so that attendance events and student records can be reviewed quickly without requiring a separate database server.
+
+## Tables
 
 ### students
-Stores enrolled fingerprint profiles and their human-readable metadata.
+
+The students table stores the main enrollment profile for each person.
 
 ```sql
 CREATE TABLE students (
@@ -24,7 +23,8 @@ CREATE TABLE students (
 ```
 
 ### attendance
-Stores attendance events including matched scans and unregistered/unknown scans.
+
+The attendance table stores attendance events, including recognized and unknown scans.
 
 ```sql
 CREATE TABLE attendance (
@@ -38,16 +38,18 @@ CREATE TABLE attendance (
 );
 ```
 
-Operational Notes
------------------
-- Fingerprint ID `0` is used as a sentinel value for unknown/unregistered scans and is displayed in the UI as "Unregistered".
-- Attendance rows are preserved for history, reports, and auditing even when no roster record exists for the scan.
-- Indexes and helper queries are used to support day-based views and paginated history browsing.
+## Design notes
 
-Session Update — 2026-07-05
---------------------------
+- Fingerprint ID 0 is used as a sentinel value for unknown or unregistered scans.
+- Attendance history is preserved even when no matching student record exists.
+- The database is used for both operational history and reporting.
 
-- The `attendance` table continues to store both recognized scans and unknown scans using the same normalized event model.
-- Unknown scans are now intentionally persisted with `fingerprint_id = 0` and `status = "UNKNOWN"`, which allows the GUI to distinguish them as sentinel unregistered events.
-- The `students` table is protected from having fingerprint ID `0` inserted, preserving sentinel behavior and preventing confusion between unknown scans and real student profiles.
-- The application now avoids registering student profiles for sentinel IDs and instead requires a valid positive fingerprint ID before `register_student()` will succeed.
+## Backup behavior
+
+Backups are stored as timestamped database snapshots inside the data/backups directory. This provides a simple restore path if files are deleted, corrupted, or need to be rolled back.
+
+## Data integrity considerations
+
+- student IDs should remain unique and positive
+- attendance events should be written with valid timestamps
+- destructive actions should be used deliberately because they affect the local history store

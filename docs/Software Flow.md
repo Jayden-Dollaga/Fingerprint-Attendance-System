@@ -1,61 +1,53 @@
-Software Flow
-=============
+# Software Flow
 
-Startup
--------
-- `python/main.py` initializes logging and the GUI application (`FingerprintApp`).
-- Database is initialised via `init_database()` (creates tables if missing).
+## Overview
 
-Connection Lifecycle
---------------------
-- User clicks Connect -> `SerialHandler.connect()` opens serial port and returns status.
-- On connect, the GUI starts a background reader thread (`read_serial_output`) that continuously calls `SerialHandler.read_line()`.
-- If the serial handler reports a disconnect, `auto_reconnect()` uses exponential backoff to retry; the GUI observes `reconnect_count` to display progress and updates buttons accordingly.
+This document explains the runtime behavior of the application from startup through enrollment, scanning, logging, backup, and restore.
 
-Enrollment Flow
----------------
-1. User clicks `Enroll` in GUI (permission checked).
-2. GUI sends `ENROLL` command using `cmd_enroll()` and opens the enroll dialog.
-3. The enroll dialog waits for ESP32 messages (`ENROLLING FINGER AS ID #n`, `SUCCESS! Finger saved as ID #n`) and enables Save when complete.
-4. Saving registers the student in the `students` table via `register_student()`.
+## Startup flow
 
-Scanning / Attendance
----------------------
-- `cmd_scan()` instructs ESP32 to enter scan mode.
-- ESP32 prints `ID: <n>` lines for recognized fingerprints; GUI parses these, applies cooldown rules, and calls `log_attendance()`.
-- The parser now expires stale `ID:` state after a short timeout if no `CONFIDENCE:` line arrives.
-- Attendance rows are inserted into the `attendance` table with timestamp and confidence.
-- New scans are inserted incrementally into the active Attendance view rather than rebuilding the full list on every scan.
+1. The user launches the application.
+2. The Python app initializes configuration and logging.
+3. The database is created or validated.
+4. The GUI opens and the connection controls become available.
 
-Roster Management
------------------
-- GUI provides a Students dialog listing profiles coming from `get_all_students()`.
-- Delete flows send `DELETE:<id>` to the ESP32 (if connected) and remove the DB row locally; if disconnected, delete only updates DB and instructs user to re-run delete while connected to clear sensor.
+## Connection lifecycle
 
-Backup & Restore
-----------------
-- Backup: `backup_database()` copies the DB to `data/backups/attendance_YYYYMMDD_HHMMSS.db`.
-- Restore UI lists these backups (`list_backups()`), and `restore_database(path)` replaces the active DB file with the chosen backup.
-- After restore the GUI reloads DB state and refreshes roster/attendance UI.
+1. The user clicks Connect.
+2. The serial handler opens the selected COM port.
+3. A background reader loop begins consuming incoming serial lines.
+4. The GUI updates connection status and enables actions as the device becomes available.
+5. If the connection is lost, reconnect logic begins retrying automatically.
 
-Permissions
------------
-- `has_permission()` checks `python/config.py` `USER_ROLES` for the current role.
-- UI controls render disabled/enabled states; critical handlers also enforce permission checks (e.g., export, restore, delete, wipe).
+## Enrollment flow
 
-Logging
--------
-- Application logs all notable events through `core.logger` to both console and files under `data/logs/`.
-- Recent updates added clearer logging for reconnect attempts, backup success/failure, and restore operations.
+1. The user chooses Enrollment from the GUI.
+2. The GUI sends an enrollment command to the ESP32.
+3. The firmware captures the fingerprint template.
+4. The Python app waits for a successful response.
+5. The student profile is written to the SQLite database.
 
-Session Update — 2026-07-05
---------------------------
+## Attendance scanning flow
 
-- The app now defaults to the Today attendance view and preserves Recent as a paged history mode.
-- Matching fingerprint scans are logged immediately and inserted into the UI at the top when the current view is active.
-- Unknown scans are recorded in the database as `fingerprint_id = 0` and rendered as "Unregistered" entries rather than being discarded.
-- Added per-fingerprint cooldown enforcement, which prevents duplicate entries for the same fingerprint while still allowing different IDs to log normally.
-- The scan parser now tracks `last_logged_times` per fingerprint ID and uses the same timeout logic for UNKNOWN scans through sentinel ID `0`.
-- The attendance refresh flow now rebuilds the view cleanly from the database, resets pagination when switching back to Today, and preserves Recent history state correctly.
-- Restore and wipe flows now verify that no active scan is in progress before executing destructive operations.
-- This session included fixes to the attendance card rendering path so student metadata is recomputed from the latest roster state and stale Add Student actions are avoided.
+1. Scan mode is started from the GUI.
+2. The ESP32 waits for a fingerprint.
+3. When a fingerprint is presented, the device attempts matching.
+4. The Python app receives the result over serial.
+5. The attendance event is recorded and the UI is refreshed.
+6. Unknown or unregistered scans are stored as history entries rather than being dropped.
+
+## Backup and restore flow
+
+1. The operator selects Backup from the GUI.
+2. The database is copied to a timestamped backup file.
+3. The operator can later restore from the list of available backups.
+4. The active database is replaced with the selected snapshot.
+5. The UI is refreshed to reflect the restored state.
+
+## Permission flow
+
+The GUI checks the current role before enabling actions. Protected operations such as delete, wipe, restore, export, and backup are restricted when the role does not permit them.
+
+## Logging flow
+
+Operational events are written to both the console and log files under the data/logs directory. This makes it easier to review connection problems, backup results, and attendance processing issues.

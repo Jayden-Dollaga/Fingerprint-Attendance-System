@@ -1,26 +1,45 @@
-Hardware Connections
-=====================
+# Hardware Connections
 
-Supported Hardware
-------------------
-- ESP32 WROOM-32 (USB serial)
-- AS608 Optical Fingerprint Sensor
-- USB cable for serial
+## Overview
 
-Default Pin Mapping (ESP32)
----------------------------
-- AS608 TX -> ESP32 RX (GPIO 14)  
-- AS608 RX -> ESP32 TX (GPIO 27)  
-- VCC -> 3.3V
-- GND -> GND
+The fingerprint attendance system uses an ESP32 board and an AS608 optical fingerprint sensor. The ESP32 acts as the controller and serial bridge, while the AS608 provides scanning and matching functionality.
 
-Notes
------
-- The firmware expects the serial port to be available over USB. Configure `COM_PORT` in `python/config.py` when deploying to another machine.
-- Use a stable power source for the sensor to prevent false reads.
-- If using a different ESP32 board or different pins, update the firmware pins and ensure `BAUD_RATE` matches `python/config.py`.
+## Recommended hardware
 
-Session Notes — 2026-07-05
--------------------------
+- ESP32 DevKit or WROOM-32 board
+- AS608 fingerprint sensor module
+- USB cable for power and serial communication
+- breadboard and jumper wires
+- stable 3.3V power source
 
-- No hardware wiring changes were made during this session. The work focused on the Python GUI, SQLite attendance data model, and serial command handling.
+## Default wiring
+
+| AS608 pin | Connection | ESP32 connection |
+| --- | --- | --- |
+| V+ | 3.3V | 3.3V |
+| GND | Ground | GND |
+| TX | Sensor TX | ESP32 RX |
+| RX | Sensor RX | ESP32 TX |
+
+> The exact pin numbers may vary by board revision. The current firmware expects a serial-based communication path between the ESP32 and the sensor module.
+
+## Notes on wiring quality
+
+- use short, secure jumper connections
+- keep the sensor away from power noise where possible
+- avoid loose wires that can cause intermittent serial reads
+- make sure the sensor board is powered from a stable source
+
+## Serial considerations
+
+The host machine connects to the ESP32 through USB. The Python application uses the discovered COM port to communicate with the device. If you change boards or wiring significantly, verify that the firmware and host-side serial settings still agree.
+
+## Validation checklist
+
+Before using the device, confirm that:
+
+- the ESP32 powers on normally
+- the sensor powers on and stays stable
+- the USB cable is reliable
+- the serial port appears in the operating system
+- the firmware uploads successfully

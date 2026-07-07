@@ -1,8 +1,8 @@
 # Fingerprint Attendance System v2.0
 
-**Status:** ✅ Production Ready — ESP32 fingerprint scanning, Python desktop GUI, SQLite data storage, backup/restore, role-based access, and reporting.
+**Status:** ✅ Production Ready — ESP32 fingerprint scanning, a desktop GUI, SQLite storage, backup/restore support, role-based access, and reporting.
 
-This project started as a practical hardware experiment: connect a fingerprint sensor to an ESP32, read biometric input, and use a desktop application to manage attendance records. It has since grown into a full attendance-management platform that combines embedded firmware, a Python application, a local database, and user-facing tools for monitoring and exporting data.
+This project began as a practical hardware experiment: connect a fingerprint sensor to an ESP32, read biometric input, and use a desktop application to manage attendance records. It has since grown into a complete attendance-management platform with embedded firmware, a Python application, a local database, and reporting tools.
 
 ---
 
@@ -27,9 +27,35 @@ This project started as a practical hardware experiment: connect a fingerprint s
 
 ---
 
+## Quick Start
+
+The fastest way to try the GUI on Windows:
+
+1. Install dependencies (one-time):
+
+```bash
+install_requirements.bat
+```
+
+1. Launch the desktop GUI:
+
+```bash
+run_app.bat
+```
+
+Command-line alternatives:
+
+```bash
+python -m pip install -r requirements.txt   # Optional
+python python/gui/app.py                    # Run GUI directly
+python python/main.py                       # Run console mode (serial CLI)
+```
+
+---
+
 ## What this project does
 
-The system allows a school, office, or training center to:
+The system is designed for schools, offices, or training centers and supports:
 
 - enroll students with fingerprint data
 - scan fingerprints for attendance verification
@@ -40,7 +66,7 @@ The system allows a school, office, or training center to:
 - restrict actions by user role
 - communicate with a fingerprint sensor over serial using an ESP32
 
-In short, it is a complete biometric attendance workflow from sensor input to data storage and reporting.
+In short, it covers the full biometric attendance workflow from sensor input to data storage and reporting.
 
 ---
 
@@ -77,7 +103,7 @@ There are **2 things I would NOT commit.**
 
 ### ❌ 1. Log files
 
-```
+```text
 data/logs/2026-07-07.log
 ```
 
@@ -85,7 +111,7 @@ Don't commit runtime logs.
 
 Add to `.gitignore`
 
-```
+```text
 data/logs/
 ```
 
@@ -93,29 +119,28 @@ data/logs/
 
 ### ❌ 2. `settings.json`
 
-```
+```text
 data/settings.json
 ```
 
 That's user-specific. Ignore it too:
 
-```
+```text
 data/settings.json
 ```
 
 or
 
-```
+```text
 data/*.json
 ```
 
 (if there aren't important JSON files in `data/`)
 
-
 ## Hardware used
 
 | Component | Purpose |
-|---|---|
+| --- | --- |
 | ESP32 DevKit / WROOM-32 | Main controller and serial bridge |
 | AS608 fingerprint sensor | Captures and matches fingerprints |
 | USB cable | Connects the ESP32 to the computer |
@@ -125,7 +150,7 @@ data/*.json
 ### Typical wiring
 
 | AS608 wire | Color | ESP32 connection |
-|---|---|---|
+| --- | --- | --- |
 | V+ | Purple | 3.3V |
 | GND | Blue | GND |
 | TX | Orange | RX pin |
@@ -151,7 +176,7 @@ The exact GPIO mapping may vary depending on the firmware and hardware layout. T
 ## Project structure
 
 ```text
-AI-Assisted-Fingerprint-Attendance-System/
+Fingerprint-Attendance-System/
 ├── firmware/                     # ESP32 Arduino sketches
 │   ├── attendance/
 │   ├── enroll/
@@ -253,7 +278,7 @@ python python/gui/app.py
 ## ESP32 command reference
 
 | Command | Purpose |
-|---|---|
+| --- | --- |
 | SCAN | Start attendance scanning mode |
 | STOP | Exit scanning mode |
 | ENROLL | Enroll a new fingerprint using the next available slot |
@@ -269,7 +294,7 @@ python python/gui/app.py
 The application supports role-based access so different users can work with different levels of control.
 
 | Role | Permissions |
-|---|---|
+| --- | --- |
 | Administrator | Full access including scan, enroll, delete, wipe, export, backup, and restore |
 | Teacher | Scan, export, and backup access |
 | Guest | Scan-only access |
